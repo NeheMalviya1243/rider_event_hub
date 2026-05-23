@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rider Event Hub</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#F1F5F9;--surface:#FFFFFF;--surface2:#F8FAFC;
+      --border:#E2E8F0;--border-hover:#CBD5E1;
+      --text:#0F172A;--text-muted:#64748B;--text-light:#94A3B8;
+      --nav-bg:#0F172A;--nav-text:#CBD5E1;--nav-active:#FFFFFF;
+      --accent:#3B82F6;--accent-hover:#2563EB;
+      --cat-networking-bg:#DCFCE7;--cat-networking-text:#16A34A;
+      --cat-workshop-bg:#DBEAFE;--cat-workshop-text:#2563EB;
+      --cat-academic-bg:#EDE9FE;--cat-academic-text:#7C3AED;
+      --cat-club-bg:#FEF3C7;--cat-club-text:#D97706;
+      --cat-food-bg:#FFE4E6;--cat-food-text:#E11D48;
+      --cat-orientation-bg:#CFFAFE;--cat-orientation-text:#0891B2;
+      --cat-campuslife-bg:#F0FDF4;--cat-campuslife-text:#15803D;
+      --cat-social-bg:#FDF4FF;--cat-social-text:#9333EA;
+      --font:'Nunito',sans-serif;
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+      --shadow:0 4px 12px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg:0 10px 30px rgba(0,0,0,0.1),0 4px 8px rgba(0,0,0,0.05);
+    }
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
+    ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-hover);border-radius:3px;}
+    nav{background:var(--nav-bg);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:4px;}
+    .nav-logo{display:flex;align-items:center;gap:9px;font-size:1.1rem;font-weight:800;color:var(--nav-active);cursor:pointer;}
+    .nav-logo-icon{width:32px;height:32px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+    .nav-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap;}
+    .nav-link{padding:0.45rem 0.85rem;border-radius:6px;font-size:0.85rem;font-weight:600;color:var(--nav-text);cursor:pointer;transition:all 0.15s;border:none;background:none;font-family:var(--font);}
+    .nav-link:hover{color:var(--nav-active);background:rgba(255,255,255,0.08);}
+    .nav-link.active{color:var(--nav-active);background:rgba(255,255,255,0.12);}
+    .nav-link.cta{background:var(--accent);color:white;margin-left:0.5rem;}
+    .nav-link.cta:hover{background:var(--accent-hover);color:white;}
+    .hero{background:var(--nav-bg);padding:4rem 2rem 4.5rem;position:relative;overflow:hidden;}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(59,130,246,0.12) 0%,transparent 60%);}
+    .hero-content{position:relative;max-width:1200px;margin:0 auto;}
+    .hero h1{font-size:clamp(2rem,5vw,3.25rem);font-weight:900;color:white;line-height:1.1;margin-bottom:1rem;}
+    .hero p{font-size:1rem;color:#94A3B8;line-height:1.65;margin-bottom:2rem;max-width:520px;}
+    .hero-btns{display:flex;gap:0.75rem;flex-wrap:wrap;}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:0.65rem 1.5rem;border-radius:8px;font-family:var(--font);font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.15s;border:none;}
+    .btn:disabled{opacity:0.6;cursor:not-allowed;}
+    .btn-primary{background:var(--accent);color:white;}
+    .btn-primary:hover:not(:disabled){background:var(--accent-hover);transform:translateY(-1px);}
+    .btn-outline{background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.15);}
+    .btn-outline:hover{background:rgba(255,255,255,0.14);}
+    .btn-outline-dark{background:white;color:var(--text);border:1px solid var(--border);}
+    .btn-outline-dark:hover{border-color:var(--border-hover);}
+    .container{max-width:1200px;margin:0 auto;padding:0 2rem;}
+    .section{padding:2.5rem 0;}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+    .section-title{font-size:1.35rem;font-weight:800;color:var(--text);}
+    .view-all{font-size:0.85rem;font-weight:700;color:var(--accent);cursor:pointer;background:none;border:none;font-family:var(--font);}
+    .view-all:hover{text-decoration:underline;}
+    .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;}
+    .event-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.2s;cursor:pointer;box-shadow:var(--shadow-sm);}
+    .event-card:hover{border-color:var(--border-hover);box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+    .event-card-body{padding:1.1rem 1.25rem 1.25rem;}
+    .event-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;}
+    .cat-badge{font-size:0.7rem;font-weight:700;letter-spacing:0.03em;padding:0.22rem 0.6rem;border-radius:4px;display:inline-block;}
+    .cat-Networking{background:var(--cat-networking-bg);color:var(--cat-networking-text);}
+    .cat-Workshop{background:var(--cat-workshop-bg);color:var(--cat-workshop-text);}
+    .cat-Academic{background:var(--cat-academic-bg);color:var(--cat-academic-text);}
+    .cat-Club{background:var(--cat-club-bg);color:var(--cat-club-text);}
+    .cat-Food-Social{background:var(--cat-food-bg);color:var(--cat-food-text);}
+    .cat-Orientation{background:var(--cat-orientation-bg);color:var(--cat-orientation-text);}
+    .cat-Campus-Life{background:var(--cat-campuslife-bg);color:var(--cat-campuslife-text);}
+    .cat-Other{background:var(--cat-social-bg);color:var(--cat-social-text);}
+    .event-card-title{font-size:1rem;font-weight:800;margin-bottom:0.45rem;line-height:1.3;color:var(--text);}
+    .event-card-desc{font-size:0.83rem;color:var(--text-muted);line-height:1.55;margin-bottom:0.85rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .event-meta{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:1rem;}
+    .event-meta-row{display:flex;align-items:center;gap:0.45rem;font-size:0.8rem;color:var(--text-muted);}
+    .event-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:0.85rem;border-top:1px solid var(--border);}
+    .event-organizer{font-size:0.78rem;color:var(--text-muted);font-weight:600;}
+    .btn-sm{padding:0.35rem 0.85rem;font-size:0.8rem;border-radius:6px;}
+    .btn-view{background:none;color:var(--accent);border:none;font-weight:700;font-size:0.82rem;font-family:var(--font);cursor:pointer;}
+    .btn-view:hover{text-decoration:underline;}
+    .featured-star{font-size:0.75rem;color:#D97706;font-weight:700;}
+    .filters-bar{display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;}
+    .filter-input,.filter-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.9rem;color:var(--text);font-family:var(--font);font-size:0.88rem;transition:border-color 0.15s;}
+    .filter-input{flex:1;min-width:200px;}
+    .filter-input:focus,.filter-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+    .filter-input::placeholder{color:var(--text-light);}
+    .filter-select{cursor:pointer;min-width:140px;}
+    .form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem;max-width:700px;margin:0 auto;box-shadow:var(--shadow);}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;}
+    .form-full{grid-column:1/-1;}
+    .form-group{display:flex;flex-direction:column;gap:0.4rem;}
+    .form-label{font-size:0.82rem;font-weight:700;color:var(--text);}
+    .form-label .req{color:#E11D48;}
+    .form-label .opt{color:var(--text-light);font-weight:400;}
+    .form-label .char-count{float:right;font-weight:400;color:var(--text-light);}
+    .form-label .char-count.over{color:#E11D48;}
+    .form-control{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.65rem 0.9rem;color:var(--text);font-family:var(--font);font-size:0.9rem;transition:border-color 0.15s;width:100%;}
+    .form-control:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1);background:white;}
+    .form-control::placeholder{color:var(--text-light);}
+    .form-control.error{border-color:#E11D48;}
+    textarea.form-control{resize:vertical;min-height:100px;max-height:200px;}
+    .form-actions{margin-top:1.5rem;display:flex;gap:0.75rem;align-items:center;}
+    .page-header{padding:2rem 0 0;margin-bottom:1.5rem;}
+    .page-header h1{font-size:1.75rem;font-weight:900;margin-bottom:0.3rem;}
+    .page-header p{color:var(--text-muted);font-size:0.9rem;}
+    .admin-tabs{display:flex;gap:0.25rem;border-bottom:2px solid var(--border);margin-bottom:1.5rem;}
+    .admin-tab{padding:0.65rem 1.25rem;font-size:0.88rem;font-weight:700;color:var(--text-muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;font-family:var(--font);}
+    .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .admin-tab:hover:not(.active){color:var(--text);}
+    .admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0.85rem;margin-bottom:1.75rem;}
+    .admin-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem;box-shadow:var(--shadow-sm);}
+    .admin-stat-num{font-size:1.9rem;font-weight:900;line-height:1;}
+    .admin-stat-label{font-size:0.8rem;color:var(--text-muted);margin-top:4px;font-weight:600;}
+    .admin-event-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.35rem;margin-bottom:0.85rem;box-shadow:var(--shadow-sm);}
+    .admin-event-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.6rem;gap:1rem;}
+    .admin-event-title{font-size:1rem;font-weight:800;color:var(--text);margin-top:0.4rem;}
+    .status-badge{font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:0.28rem 0.65rem;border-radius:4px;flex-shrink:0;margin-top:2px;}
+    .status-pending{background:#FEF3C7;color:#D97706;}
+    .status-approved{background:#DCFCE7;color:#16A34A;}
+    .status-rejected{background:#FFE4E6;color:#E11D48;}
+    .admin-event-desc{font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5;}
+    .admin-event-meta{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;font-size:0.82rem;color:var(--text-muted);}
+    .admin-actions{display:flex;gap:0.6rem;flex-wrap:wrap;}
+    .btn-approve{background:#DCFCE7;color:#16A34A;border:1px solid #BBF7D0;}
+    .btn-approve:hover{background:#BBF7D0;}
+    .btn-reject{background:#FFE4E6;color:#E11D48;border:1px solid #FECDD3;}
+    .btn-reject:hover{background:#FECDD3;}
+    .btn-feature{background:#FEF3C7;color:#D97706;border:1px solid #FDE68A;}
+    .btn-feature:hover{background:#FDE68A;}
+    .login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2.5rem;max-width:400px;margin:3rem auto;box-shadow:var(--shadow);}
+    .org-event-row{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1.1rem 1.25rem;margin-bottom:0.65rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;box-shadow:var(--shadow-sm);}
+    .org-event-row h4{font-size:0.95rem;font-weight:800;margin-bottom:0.2rem;}
+    .org-event-row p{font-size:0.8rem;color:var(--text-muted);}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.55);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+    .modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;}
+    .modal-close{background:var(--bg);border:1px solid var(--border);color:var(--text-muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;}
+    .modal-close:hover{color:var(--text);border-color:var(--border-hover);}
+    .modal-detail-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.1rem;margin-bottom:1.1rem;display:flex;flex-direction:column;gap:0.6rem;}
+    .modal-detail-row{display:flex;align-items:center;gap:0.5rem;font-size:0.88rem;color:var(--text-muted);}
+    .modal-detail-row strong{color:var(--text);}
+    .tg-banner{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:1px solid #BFDBFE;border-radius:12px;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.5rem;}
+    .tg-left{display:flex;align-items:center;gap:0.9rem;}
+    .tg-icon{font-size:1.75rem;}
+    .tg-title{font-size:0.95rem;font-weight:800;color:#1E40AF;margin-bottom:0.2rem;}
+    .tg-sub{font-size:0.82rem;color:#3B82F6;}
+    .tg-coming{background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;font-size:0.82rem;font-weight:700;padding:0.45rem 1rem;border-radius:6px;white-space:nowrap;}
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--nav-bg);color:white;border-radius:10px;padding:0.85rem 1.25rem;font-size:0.88rem;font-weight:600;z-index:1000;display:flex;align-items:center;gap:0.65rem;box-shadow:var(--shadow-lg);animation:slideUp 0.25s ease;max-width:320px;}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .empty{text-align:center;padding:3.5rem 1rem;color:var(--text-muted);}
+    .empty .empty-icon{font-size:2.75rem;margin-bottom:0.85rem;}
+    .empty h3{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:0.35rem;}
+    .empty p{font-size:0.88rem;}
+    .loading{text-align:center;padding:3rem 1rem;color:var(--text-muted);}
+    .loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .error-box{background:#FFF5F5;border:1px solid #FECDD3;border-radius:8px;padding:0.75rem 1rem;font-size:0.85rem;color:#E11D48;margin-bottom:1rem;}
+    /* Food badge */
+    .food-badge{display:inline-flex;align-items:center;gap:4px;background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;border-radius:4px;padding:0.18rem 0.55rem;font-size:0.71rem;font-weight:700;margin-top:0.35rem;}
+    /* Remind + Bookmark */
+    .remind-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);border-radius:6px;padding:0.38rem 0.85rem;font-size:0.82rem;font-weight:700;color:var(--text-muted);cursor:pointer;font-family:var(--font);transition:all 0.15s;}
+    .remind-btn:hover{border-color:var(--accent);color:var(--accent);background:#EFF6FF;}
+    .remind-btn.reminded{background:#EFF6FF;border-color:#BFDBFE;color:#2563EB;}
+    .bookmark-btn{background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px 4px;transition:transform 0.15s;color:var(--text-light);}
+    .bookmark-btn:hover{transform:scale(1.2);}
+    .bookmark-btn.saved{color:#F59E0B;}
+    /* RSVP */
+    .rsvp-bar{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+    .rsvp-info{font-size:0.85rem;color:var(--text-muted);font-weight:600;}
+    .rsvp-info strong{color:var(--text);}
+    .rsvp-progress{height:6px;background:var(--border);border-radius:3px;flex:1;min-width:80px;overflow:hidden;}
+    .rsvp-progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 0.3s;}
+    .capacity-badge{font-size:0.71rem;font-weight:700;background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:4px;padding:0.18rem 0.55rem;}
+    .capacity-badge.full{background:#FFE4E6;color:#E11D48;border-color:#FECDD3;}
+    .btn-rsvp{background:var(--accent);color:white;border:none;border-radius:7px;padding:0.45rem 1.1rem;font-family:var(--font);font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.15s;}
+    .btn-rsvp:hover:not(:disabled){background:var(--accent-hover);}
+    .btn-rsvp.rsvped{background:#DCFCE7;color:#16A34A;border:1px solid #BBF7D0;}
+    .btn-rsvp:disabled{opacity:0.55;cursor:not-allowed;}
+    .views-badge{font-size:0.72rem;color:var(--text-light);display:flex;align-items:center;gap:3px;}
+    /* QR */
+    .qr-section{border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem;text-align:center;}
+    .qr-label{font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.6rem;}
+    .qr-box{display:inline-block;background:white;border:1px solid var(--border);border-radius:8px;padding:0.6rem;}
+    /* Comments */
+    .comments-section{border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem;}
+    .comments-title{font-size:0.9rem;font-weight:800;margin-bottom:0.75rem;color:var(--text);}
+    .comment-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;}
+    .comment-author{font-size:0.75rem;font-weight:700;color:var(--accent);margin-bottom:0.2rem;}
+    .comment-text{font-size:0.84rem;color:var(--text);line-height:1.5;}
+    .comment-time{font-size:0.72rem;color:var(--text-light);margin-top:0.2rem;}
+    .comment-form{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.75rem;}
+    .comment-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.55rem 0.8rem;font-family:var(--font);font-size:0.85rem;color:var(--text);resize:none;width:100%;}
+    .comment-input:focus{outline:none;border-color:var(--accent);}
+    /* Today strip */
+    .today-strip{background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1px solid #FED7AA;border-radius:12px;padding:1.1rem 1.5rem;margin-bottom:1.25rem;}
+    .today-strip-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;}
+    .today-strip-title{font-size:1rem;font-weight:900;color:#C2410C;display:flex;align-items:center;gap:0.5rem;}
+    .today-event-row{display:flex;align-items:center;justify-content:space-between;background:white;border:1px solid #FED7AA;border-radius:8px;padding:0.65rem 1rem;cursor:pointer;transition:all 0.15s;margin-bottom:0.5rem;}
+    .today-event-row:hover{border-color:#F97316;box-shadow:0 2px 8px rgba(249,115,22,0.12);}
+    .today-event-title{font-size:0.9rem;font-weight:800;color:var(--text);}
+    .today-event-meta{font-size:0.78rem;color:var(--text-muted);}
+    /* Calendar */
+    .cal-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;box-shadow:var(--shadow);margin-bottom:0.5rem;}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+    .cal-month-title{font-size:1.15rem;font-weight:900;color:var(--text);}
+    .cal-nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;width:34px;height:34px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all 0.15s;}
+    .cal-nav-btn:hover{border-color:var(--border-hover);color:var(--text);}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+    .cal-dow{text-align:center;font-size:0.75rem;font-weight:700;color:var(--text-light);padding:0.4rem 0;}
+    .cal-cell{min-height:62px;border-radius:8px;padding:0.4rem;cursor:pointer;border:1px solid transparent;transition:all 0.15s;}
+    .cal-cell-empty{cursor:default;background:none!important;border-color:transparent!important;}
+    .cal-cell:not(.cal-cell-empty):hover{background:var(--surface2);border-color:var(--border);}
+    .cal-today .cal-day-num{background:var(--accent);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+    .cal-selected{background:#EFF6FF!important;border-color:#BFDBFE!important;}
+    .cal-has-events{background:var(--surface2);}
+    .cal-day-num{font-size:0.85rem;font-weight:700;color:var(--text);width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:3px;}
+    .cal-dots{display:flex;gap:2px;flex-wrap:wrap;}
+    .cal-dot{width:7px;height:7px;border-radius:50%;}
+    .cal-dot.cat-Academic{background:#7C3AED;}.cal-dot.cat-Networking{background:#16A34A;}.cal-dot.cat-Club{background:#D97706;}
+    .cal-dot.cat-Campus-Life{background:#15803D;}.cal-dot.cat-Food-Social{background:#E11D48;}.cal-dot.cat-Workshop{background:#2563EB;}
+    .cal-dot.cat-Orientation{background:#0891B2;}.cal-dot.cat-Other{background:#9333EA;}
+    /* Admin extras */
+    .btn-csv{background:#DCFCE7;color:#16A34A;border:1px solid #BBF7D0;border-radius:7px;padding:0.4rem 1rem;font-family:var(--font);font-size:0.82rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+    .btn-csv:hover{background:#BBF7D0;}
+    .bulk-bar{background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:0.65rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}
+    .bulk-bar span{font-size:0.85rem;font-weight:700;color:#D97706;}
+    .edit-overlay{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-top:0.75rem;}
+    footer{border-top:1px solid var(--border);padding:1.75rem 2rem;text-align:center;color:var(--text-muted);font-size:0.83rem;margin-top:3rem;background:var(--surface);}
+    footer strong{color:var(--text);}
+    @media(max-width:768px){
+      .events-grid{grid-template-columns:1fr;}
+      .form-grid{grid-template-columns:1fr;}
+      .admin-stats{grid-template-columns:repeat(2,1fr);}
+      nav{padding:0 1rem;height:auto;padding:0.5rem 1rem;}
+      .nav-links .nav-link{font-size:0.78rem;padding:0.35rem 0.6rem;}
+      .container{padding:0 1rem;}
+      .tg-banner{flex-direction:column;align-items:flex-start;}
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ── SUPABASE ──────────────────────────────────────────────────
+// Fill in your Supabase Project URL and anon key below.
+// Get them from: supabase.com → your project → Settings → API
+const SUPABASE_URL      = 'https://thvtbqtfcesratrczmac.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_l8xiMjjkKEZTuQmCVmMm9g_nQTrNAr7';
+
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function sbCheck({ data, error }) {
+  if (error) throw new Error(error.message || 'Database error');
+  return data;
+}
+
+// ── ADMIN AUTH ────────────────────────────────────────────────
+// Password: RiderAdmin2026!
+const ADMIN_HASH = '4a8bdf8a883ee8179af67230a6649594073f918431292d753441bdbd5b80ce94';
+async function hashPw(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── REMINDERS (localStorage) ──────────────────────────────────
+function getReminders() { try { return JSON.parse(localStorage.getItem('riderReminders')||'[]'); } catch { return []; } }
+function isReminded(id) { return getReminders().some(r => String(r.id)===String(id)); }
+function toggleReminder(ev) {
+  const arr = getReminders();
+  const exists = arr.some(r => String(r.id)===String(ev.id));
+  if (exists) { localStorage.setItem('riderReminders', JSON.stringify(arr.filter(r => String(r.id)!==String(ev.id)))); return false; }
+  arr.push({ id:ev.id, title:ev.title, date:ev.date, start_time:ev.start_time });
+  localStorage.setItem('riderReminders', JSON.stringify(arr));
+  return true;
+}
+function requestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+}
+
+// ── BOOKMARKS (localStorage) ──────────────────────────────────
+function getBookmarks() { try { return JSON.parse(localStorage.getItem('riderBookmarks')||'[]'); } catch { return []; } }
+function isBookmarked(id) { return getBookmarks().some(b => String(b.id)===String(id)); }
+function toggleBookmark(ev) {
+  const arr = getBookmarks();
+  const exists = arr.some(b => String(b.id)===String(ev.id));
+  if (exists) { localStorage.setItem('riderBookmarks', JSON.stringify(arr.filter(b => String(b.id)!==String(ev.id)))); return false; }
+  localStorage.setItem('riderBookmarks', JSON.stringify([...arr, {id:ev.id,title:ev.title,date:ev.date,category:ev.category}]));
+  return true;
+}
+
+// ── RSVP (localStorage to prevent duplicates) ─────────────────
+function getRsvpd() { try { return JSON.parse(localStorage.getItem('riderRsvp')||'[]'); } catch { return []; } }
+function isRsvpd(id) { return getRsvpd().includes(String(id)); }
+function markRsvpd(id) { const r = getRsvpd(); if (!r.includes(String(id))) localStorage.setItem('riderRsvp', JSON.stringify([...r, String(id)])); }
+
+// ── CSV EXPORT ────────────────────────────────────────────────
+function exportCSV(events) {
+  const headers = ['ID','Title','Category','Date','Start','End','Location','Organizer','Email','Status','Featured','RSVPs','Capacity','Views','Food'];
+  const rows = events.map(e => [e.id,e.title,e.category,e.date,e.start_time,e.end_time,e.location,e.organizer,e.organizer_email,e.status,e.featured?'Yes':'No',e.rsvp_count||0,e.capacity||0,e.view_count||0,e.food_info||'']);
+  const csv = [headers,...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'rider-events-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+const CATS = ['Academic','Networking','Club','Campus Life','Food & Social','Workshop','Orientation/Help','Other'];
+const CAT_CSS = {
+  'Academic':'cat-Academic','Networking':'cat-Networking','Club':'cat-Club',
+  'Campus Life':'cat-Campus-Life','Food & Social':'cat-Food-Social',
+  'Workshop':'cat-Workshop','Orientation/Help':'cat-Orientation','Other':'cat-Other'
+};
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const TIME_OPTIONS = [];
+for (let h = 0; h < 24; h++) {
+  for (let m of [0,15,30,45]) {
+    const hh = String(h).padStart(2,'0'), mm = String(m).padStart(2,'0');
+    const hr = h>12?h-12:h===0?12:h, ampm = h>=12?'PM':'AM';
+    TIME_OPTIONS.push({ val:`${hh}:${mm}`, label:`${hr}:${mm} ${ampm}` });
+  }
+}
+
+function fmt(d) {
+  if (!d) return '';
+  return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtT(t) {
+  if (!t) return '';
+  const [h,m] = t.split(':'); const hr=+h;
+  return `${hr>12?hr-12:hr===0?12:hr}:${m} ${hr>=12?'PM':'AM'}`;
+}
+
+// ── BASE COMPONENTS ───────────────────────────────────────────
+function Toast({ msg, type, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, []);
+  return <div className="toast">{type==='success'?'✅':'❌'} {msg}</div>;
+}
+function Loading() {
+  return <div className="loading"><div className="loading-spinner"></div><p>Loading events...</p></div>;
+}
+function CatBadge({ cat }) {
+  return <span className={`cat-badge ${CAT_CSS[cat]||'cat-Other'}`}>{cat}</span>;
+}
+
+// ── QR CODE ───────────────────────────────────────────────────
+function QRCodeBox({ text }) {
+  const ref = React.useRef(null);
+  useEffect(() => {
+    if (!ref.current || !window.QRCode) return;
+    ref.current.innerHTML = '';
+    try { new window.QRCode(ref.current, { text, width:120, height:120 }); } catch(e) {}
+  }, [text]);
+  return <div className="qr-box"><div ref={ref}/></div>;
+}
+
+// ── COMMENTS ─────────────────────────────────────────────────
+function CommentsSection({ eventId }) {
+  const [comments, setComments] = useState([]);
+  const [author, setAuthor] = useState('');
+  const [text, setText] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    _sb.from('comments').select('*').eq('event_id', eventId).order('created_at',{ascending:true})
+      .then(({data}) => { setComments(data||[]); setLoaded(true); })
+      .catch(() => setLoaded(true));
+  }, [eventId]);
+
+  const post = async () => {
+    if (!author.trim()||!text.trim()) return;
+    setSaving(true);
+    try {
+      await _sb.from('comments').insert({event_id:eventId, author:author.trim(), text:text.trim()});
+      const {data} = await _sb.from('comments').select('*').eq('event_id',eventId).order('created_at',{ascending:true});
+      setComments(data||[]); setText('');
+    } catch(e) {}
+    setSaving(false);
+  };
+
+  return (
+    <div className="comments-section">
+      <div className="comments-title">💬 Questions & Comments</div>
+      {!loaded ? <p style={{fontSize:'0.82rem',color:'var(--text-muted)'}}>Loading...</p> : <>
+        {comments.length===0 && <p style={{fontSize:'0.83rem',color:'var(--text-muted)',marginBottom:'0.75rem'}}>No comments yet — be the first to ask!</p>}
+        {comments.map(c => (
+          <div key={c.id} className="comment-item">
+            <div className="comment-author">{c.author}</div>
+            <div className="comment-text">{c.text}</div>
+            <div className="comment-time">{c.created_at ? new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}</div>
+          </div>
+        ))}
+        <div className="comment-form">
+          <input className="comment-input" placeholder="Your name or @rider.edu" value={author} onChange={e => setAuthor(e.target.value)}/>
+          <textarea className="comment-input" rows={2} placeholder="Ask a question or leave a comment..." value={text} onChange={e => setText(e.target.value)}/>
+          <button className="btn btn-primary btn-sm" style={{alignSelf:'flex-end'}} onClick={post} disabled={saving||!author.trim()||!text.trim()}>
+            {saving?'Posting...':'Post →'}
+          </button>
+        </div>
+      </>}
+    </div>
+  );
+}
+
+// ── EVENT CARD ────────────────────────────────────────────────
+function EventCard({ ev, onView }) {
+  const [bookmarked, setBookmarked] = useState(() => isBookmarked(ev.id));
+  const cap = ev.capacity||0, rsvpd = ev.rsvp_count||0;
+  const spotsLeft = cap>0 ? cap-rsvpd : null;
+  const isFull = spotsLeft!==null && spotsLeft<=0;
+  return (
+    <div className="event-card" onClick={() => onView(ev)}>
+      <div className="event-card-body">
+        <div className="event-card-top">
+          <CatBadge cat={ev.category}/>
+          <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
+            {ev.featured && <span className="featured-star">⭐ Featured</span>}
+            <button className={`bookmark-btn ${bookmarked?'saved':''}`} title={bookmarked?'Remove':'Bookmark'}
+              onClick={e => { e.stopPropagation(); setBookmarked(toggleBookmark(ev)); }}>
+              {bookmarked?'🔖':'🏷️'}
+            </button>
+          </div>
+        </div>
+        <div className="event-card-title">{ev.title}</div>
+        <div style={{display:'flex',gap:'5px',flexWrap:'wrap',marginBottom:'0.3rem'}}>
+          {ev.food_info && <span className="food-badge">🍕 {ev.food_info}</span>}
+          {isFull && <span className="capacity-badge full">🔴 Full</span>}
+          {!isFull && spotsLeft!==null && spotsLeft<=10 && <span className="capacity-badge">🔥 {spotsLeft} spots left</span>}
+          {ev.view_count>0 && <span className="views-badge">👁 {ev.view_count}</span>}
+        </div>
+        <div className="event-card-desc">{ev.description}</div>
+        <div className="event-meta">
+          <div className="event-meta-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {fmt(ev.date)} · {fmtT(ev.start_time)} – {fmtT(ev.end_time)}
+          </div>
+          <div className="event-meta-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {ev.location}
+          </div>
+        </div>
+        <div className="event-card-footer">
+          <span className="event-organizer">{ev.organizer}</span>
+          <button className="btn-view" onClick={e => { e.stopPropagation(); onView(ev); }}>View Details</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EVENT MODAL ───────────────────────────────────────────────
+function EventModal({ ev, onClose, onRsvp }) {
+  const [reminded, setReminded] = useState(() => isReminded(ev.id));
+  const [rsvped, setRsvped] = useState(() => isRsvpd(ev.id));
+  const [rsvpCount, setRsvpCount] = useState(ev.rsvp_count||0);
+  const [showQR, setShowQR] = useState(false);
+  const cap = ev.capacity||0;
+  const isFull = cap>0 && rsvpCount>=cap;
+
+  useEffect(() => {
+    _sb.rpc('increment_view_count', {event_id: ev.id}).catch(()=>{});
+  }, [ev.id]);
+
+  const handleRemind = () => {
+    requestNotifPermission();
+    const added = toggleReminder(ev);
+    setReminded(added);
+    if (added && 'Notification' in window && Notification.permission==='granted') {
+      new Notification('🔔 Reminder Set!', {body:`${ev.title} · ${fmt(ev.date)} at ${fmtT(ev.start_time)}`});
+    }
+  };
+
+  const handleRsvp = async () => {
+    if (rsvped||isFull) return;
+    markRsvpd(ev.id);
+    setRsvped(true);
+    const newCount = rsvpCount+1;
+    setRsvpCount(newCount);
+    await _sb.rpc('increment_rsvp_count', {event_id: ev.id}).catch(()=>{});
+    if (onRsvp) onRsvp();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <CatBadge cat={ev.category}/>
+            <h2 style={{fontFamily:'var(--font)',fontSize:'1.3rem',fontWeight:900,marginTop:'0.6rem',lineHeight:1.25}}>{ev.title}</h2>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <p style={{fontSize:'0.9rem',color:'var(--text-muted)',lineHeight:1.6,marginBottom:'1.1rem'}}>{ev.description}</p>
+        {(cap>0||rsvpCount>0) && (
+          <div className="rsvp-bar">
+            <div className="rsvp-info">{cap>0?<><strong>{rsvpCount}</strong> / {cap} RSVPs</>:<><strong>{rsvpCount}</strong> RSVPs</>}</div>
+            {cap>0 && <div className="rsvp-progress"><div className="rsvp-progress-fill" style={{width:`${Math.min(100,(rsvpCount/cap)*100)}%`}}/></div>}
+          </div>
+        )}
+        <div className="modal-detail-box">
+          <div className="modal-detail-row">📅 <strong>{fmt(ev.date)}</strong></div>
+          <div className="modal-detail-row">🕐 <strong>{fmtT(ev.start_time)} – {fmtT(ev.end_time)}</strong></div>
+          <div className="modal-detail-row">📍 <strong>{ev.location}</strong></div>
+          <div className="modal-detail-row">👤 <strong>{ev.organizer}</strong></div>
+          {ev.food_info && <div className="modal-detail-row">🍕 <strong>{ev.food_info}</strong></div>}
+          {ev.view_count>0 && <div className="modal-detail-row">👁 <strong>{ev.view_count} views</strong></div>}
+        </div>
+        <div style={{display:'flex',gap:'0.6rem',flexWrap:'wrap',marginBottom:'0.85rem'}}>
+          <button className={`btn-rsvp ${rsvped?'rsvped':''}`} onClick={handleRsvp} disabled={isFull&&!rsvped}>
+            {rsvped?'✅ You\'re In!':isFull?'🔴 Full':'🙋 RSVP'}
+          </button>
+          <button className={`remind-btn ${reminded?'reminded':''}`} onClick={handleRemind}>
+            {reminded?'🔔 Reminder Set':'🔕 Remind Me'}
+          </button>
+          <button className="remind-btn" onClick={() => setShowQR(q=>!q)}>
+            📲 {showQR?'Hide QR':'Show QR'}
+          </button>
+        </div>
+        {ev.rsvp_link && (
+          <a href={ev.rsvp_link} target="_blank" rel="noopener noreferrer"
+            className="btn btn-primary" style={{width:'100%',justifyContent:'center',textDecoration:'none',display:'flex',marginBottom:'0.75rem'}}>
+            RSVP Now →
+          </a>
+        )}
+        {showQR && (
+          <div className="qr-section">
+            <div className="qr-label">Scan to share this event</div>
+            <QRCodeBox text={window.location.href}/>
+          </div>
+        )}
+        <CommentsSection eventId={ev.id}/>
+      </div>
+    </div>
+  );
+}
+
+// ── TODAY STRIP ───────────────────────────────────────────────
+function TodayStrip({ events, onView }) {
+  const todayStr = new Date().toISOString().slice(0,10);
+  const todayEvts = events.filter(e => e.status==='approved' && e.date && e.date.slice(0,10)===todayStr)
+    .sort((a,b) => (a.start_time||'').localeCompare(b.start_time||''));
+  if (todayEvts.length===0) return null;
+  return (
+    <div className="today-strip">
+      <div className="today-strip-header">
+        <div className="today-strip-title">🌅 Happening Today <span style={{fontSize:'0.8rem',fontWeight:600,color:'#EA580C'}}>({todayEvts.length} event{todayEvts.length>1?'s':''})</span></div>
+      </div>
+      {todayEvts.map(e => (
+        <div key={e.id} className="today-event-row" onClick={() => onView(e)}>
+          <div><div className="today-event-title">{e.title}</div><div className="today-event-meta">🕐 {fmtT(e.start_time)} · 📍 {e.location}</div></div>
+          <CatBadge cat={e.category}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── HOME PAGE ─────────────────────────────────────────────────
+function HomePage({ events, loading, nav, onView }) {
+  const approved = events.filter(e => e.status==='approved');
+  const featured = approved.filter(e => e.featured).slice(0,3);
+  const upcoming = [...approved].sort((a,b) => new Date(a.date)-new Date(b.date)).slice(0,6);
+  return (
+    <div>
+      <div className="hero">
+        <div className="hero-content">
+          <h1>Rider University<br/>Event Hub</h1>
+          <p>One place to discover everything happening on campus. Academic lectures, club meetings, career fairs, social events — all verified and in one feed.</p>
+          <div className="hero-btns">
+            <button className="btn btn-primary" onClick={() => nav('events')}>🔍 Browse Events</button>
+            <button className="btn btn-outline" onClick={() => nav('calendar')}>📅 View Calendar</button>
+            <button className="btn btn-outline" onClick={() => nav('submit')}>📝 Submit an Event</button>
+          </div>
+        </div>
+      </div>
+      <div className="container">
+        <div className="section">
+          {!loading && <TodayStrip events={events} onView={onView}/>}
+          <div className="tg-banner">
+            <div className="tg-left">
+              <div className="tg-icon">✈️</div>
+              <div>
+                <div className="tg-title">Get events on Telegram!</div>
+                <div className="tg-sub">New events pushed to your phone — never miss what's on campus</div>
+              </div>
+            </div>
+            <span className="tg-coming">🔔 Coming Soon</span>
+          </div>
+          {loading ? <Loading/> : <>
+            {featured.length>0 && <>
+              <div className="section-header" style={{marginTop:'1.75rem'}}>
+                <div className="section-title">Featured Events</div>
+                <button className="view-all" onClick={() => nav('events')}>View all →</button>
+              </div>
+              <div className="events-grid">{featured.map(e => <EventCard key={e.id} ev={e} onView={onView}/>)}</div>
+            </>}
+            <div className="section-header" style={{marginTop:'2rem'}}>
+              <div className="section-title">Upcoming Events</div>
+              <button className="view-all" onClick={() => nav('events')}>View all →</button>
+            </div>
+            {upcoming.length===0
+              ? <div className="empty"><div className="empty-icon">📅</div><h3>No events yet</h3><p>Be the first to <button className="btn-view" onClick={() => nav('submit')}>submit an event!</button></p></div>
+              : <div className="events-grid">{upcoming.map(e => <EventCard key={e.id} ev={e} onView={onView}/>)}</div>
+            }
+          </>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EVENTS PAGE ───────────────────────────────────────────────
+function EventsPage({ events, loading, onView }) {
+  const [search, setSearch] = useState('');
+  const [cat, setCat] = useState('All');
+  const [locFilter, setLocFilter] = useState('All');
+  const [sort, setSort] = useState('date');
+  const approved = events.filter(e => e.status==='approved');
+  const locations = ['All',...Array.from(new Set(approved.map(e=>e.location).filter(Boolean))).sort()];
+  const filtered = approved.filter(e => {
+    const s = (e.title||'').toLowerCase().includes(search.toLowerCase()) ||
+              (e.description||'').toLowerCase().includes(search.toLowerCase()) ||
+              (e.location||'').toLowerCase().includes(search.toLowerCase());
+    const c = cat==='All' || e.category===cat;
+    const l = locFilter==='All' || e.location===locFilter;
+    return s&&c&&l;
+  }).sort((a,b) => sort==='date' ? new Date(a.date)-new Date(b.date) : a.title.localeCompare(b.title));
+  return (
+    <div className="container">
+      <div className="page-header"><h1>All Events</h1><p>Browse approved campus events</p></div>
+      <div className="filters-bar">
+        <input className="filter-input" placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}/>
+        <select className="filter-select" value={cat} onChange={e => setCat(e.target.value)}>
+          <option value="All">All Categories</option>
+          {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select className="filter-select" value={locFilter} onChange={e => setLocFilter(e.target.value)}>
+          {locations.map(l => <option key={l} value={l}>{l==='All'?'All Locations':l}</option>)}
+        </select>
+        <select className="filter-select" value={sort} onChange={e => setSort(e.target.value)}>
+          <option value="date">By Date</option>
+          <option value="title">By Title</option>
+        </select>
+      </div>
+      {loading ? <Loading/> : <>
+        <p style={{fontSize:'0.85rem',color:'var(--text-muted)',fontWeight:600,marginBottom:'1rem'}}>{filtered.length} event{filtered.length!==1?'s':''} found</p>
+        {filtered.length===0
+          ? <div className="empty"><div className="empty-icon">🔍</div><h3>No events found</h3><p>Try a different search or filter</p></div>
+          : <div className="events-grid">{filtered.map(e => <EventCard key={e.id} ev={e} onView={onView}/>)}</div>
+        }
+      </>}
+    </div>
+  );
+}
+
+// ── SAVED EVENTS ──────────────────────────────────────────────
+function SavedEventsPage({ events, onView, nav }) {
+  const [bookmarks, setBookmarks] = useState(getBookmarks);
+  const savedEvents = events.filter(e => bookmarks.some(b => String(b.id)===String(e.id)));
+  return (
+    <div className="container">
+      <div className="page-header" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:'1rem'}}>
+        <div><h1>🔖 Saved Events</h1><p>Events you've bookmarked</p></div>
+        {bookmarks.length>0 && <button className="btn btn-outline-dark btn-sm" onClick={() => { localStorage.removeItem('riderBookmarks'); setBookmarks([]); }}>Clear All</button>}
+      </div>
+      {bookmarks.length===0
+        ? <div className="empty"><div className="empty-icon">🏷️</div><h3>No saved events yet</h3><p style={{marginBottom:'1.5rem'}}>Tap 🏷️ on any event card to save it here</p><button className="btn btn-primary" onClick={() => nav('events')}>Browse Events</button></div>
+        : <div className="events-grid">{savedEvents.map(e => <EventCard key={e.id} ev={e} onView={onView}/>)}</div>
+      }
+    </div>
+  );
+}
+
+// ── CALENDAR PAGE ─────────────────────────────────────────────
+function CalendarPage({ events, loading, onView, onAddEvent }) {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(null);
+  const approved = events.filter(e => e.status==='approved');
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayDay = today.getFullYear()===year && today.getMonth()===month ? today.getDate() : null;
+  const eventsOnDay = day => approved.filter(e => { if (!e.date) return false; const d = new Date(e.date+'T12:00:00'); return d.getFullYear()===year && d.getMonth()===month && d.getDate()===day; });
+  const monthEvents = approved.filter(e => { if (!e.date) return false; const d = new Date(e.date+'T12:00:00'); return d.getFullYear()===year && d.getMonth()===month; }).sort((a,b) => new Date(a.date)-new Date(b.date));
+  const prevMonth = () => { if (month===0){setYear(y=>y-1);setMonth(11);}else setMonth(m=>m-1); setSelectedDay(null); };
+  const nextMonth = () => { if (month===11){setYear(y=>y+1);setMonth(0);}else setMonth(m=>m+1); setSelectedDay(null); };
+  const cells = [];
+  for (let i=0;i<firstDow;i++) cells.push(null);
+  for (let d=1;d<=daysInMonth;d++) cells.push(d);
+  while (cells.length%7!==0) cells.push(null);
+  const selectedEvents = selectedDay ? eventsOnDay(selectedDay) : [];
+  return (
+    <div className="container">
+      <div className="page-header"><h1>📅 Event Calendar</h1><p>Click any day to see events — or add one!</p></div>
+      {loading ? <Loading/> : <>
+        <div className="cal-card">
+          <div className="cal-header">
+            <button className="cal-nav-btn" onClick={prevMonth}>‹</button>
+            <div className="cal-month-title">{MONTH_NAMES[month]} {year}</div>
+            <button className="cal-nav-btn" onClick={nextMonth}>›</button>
+          </div>
+          <div className="cal-grid">
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <div key={d} className="cal-dow">{d}</div>)}
+            {cells.map((day,i) => {
+              if (!day) return <div key={`e-${i}`} className="cal-cell cal-cell-empty"/>;
+              const dayEvts = eventsOnDay(day);
+              return (
+                <div key={day} className={`cal-cell ${day===todayDay?'cal-today':''} ${day===selectedDay?'cal-selected':''} ${dayEvts.length>0?'cal-has-events':''}`}
+                  onClick={() => setSelectedDay(day===selectedDay?null:day)}>
+                  <div className="cal-day-num">{day}</div>
+                  <div className="cal-dots">{dayEvts.slice(0,4).map((e,j) => <span key={j} className={`cal-dot ${CAT_CSS[e.category]||'cat-Other'}`}/>)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:'0.75rem',margin:'0.75rem 0',fontSize:'0.78rem',color:'var(--text-muted)'}}>
+          {Object.entries(CAT_CSS).map(([cat,cls]) => <span key={cat} style={{display:'flex',alignItems:'center',gap:'5px'}}><span className={`cal-dot ${cls}`} style={{display:'inline-block'}}/>{cat}</span>)}
+        </div>
+        {selectedDay && (
+          <div style={{marginTop:'1.25rem'}}>
+            <div className="section-header">
+              <div className="section-title">{selectedEvents.length>0?`${selectedEvents.length} event${selectedEvents.length>1?'s':''} on ${MONTH_NAMES[month]} ${selectedDay}`:`No events on ${MONTH_NAMES[month]} ${selectedDay}`}</div>
+              <div style={{display:'flex',gap:'0.6rem',alignItems:'center'}}>
+                <button className="btn btn-primary btn-sm" onClick={() => { const mm=String(month+1).padStart(2,'0'),dd=String(selectedDay).padStart(2,'0'); onAddEvent(`${year}-${mm}-${dd}`); }}>+ Add Event</button>
+                <button className="view-all" onClick={() => setSelectedDay(null)}>Clear ✕</button>
+              </div>
+            </div>
+            {selectedEvents.length===0
+              ? <div className="empty"><div className="empty-icon">📭</div><h3>Nothing on this day</h3><button className="btn btn-primary" style={{marginTop:'1rem'}} onClick={() => { const mm=String(month+1).padStart(2,'0'),dd=String(selectedDay).padStart(2,'0'); onAddEvent(`${year}-${mm}-${dd}`); }}>+ Add Event on this Day</button></div>
+              : <div className="events-grid">{selectedEvents.map(e => <EventCard key={e.id} ev={e} onView={onView}/>)}</div>
+            }
+          </div>
+        )}
+        {!selectedDay && (
+          <div style={{marginTop:'1.5rem'}}>
+            <div className="section-header"><div className="section-title">{monthEvents.length>0?`All events in ${MONTH_NAMES[month]} (${monthEvents.length})`:`No events in ${MONTH_NAMES[month]}`}</div></div>
+            {monthEvents.length===0
+              ? <div className="empty"><div className="empty-icon">📅</div><h3>Nothing this month yet</h3></div>
+              : <div className="events-grid">{monthEvents.map(e => <EventCard key={e.id} ev={e} onView={onView}/>)}</div>
+            }
+          </div>
+        )}
+      </>}
+    </div>
+  );
+}
+
+// ── SUBMIT PAGE ───────────────────────────────────────────────
+const MAX_DESC = 300;
+const MIN_DESC = 0;
+
+function SubmitPage({ onSubmit, prefillDate }) {
+  const blank = { title:'', description:'', category:'Academic', date:prefillDate||'', start_time:'', end_time:'', location:'', organizer:'', organizer_email:'', rsvp_link:'', food_provided:false, food_info:'', capacity:0 };
+  const [f, setF] = useState(blank);
+  const [done, setDone] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const set = (k,v) => setF(p => ({...p,[k]:v}));
+  const descLen = f.description.length;
+
+  const submit = async () => {
+    setError('');
+    const req = ['title','description','date','start_time','end_time','location','organizer','organizer_email'];
+    if (req.some(k => !f[k])) { setError('Please fill in all required fields.'); return; }
+    if (!f.organizer_email.endsWith('@rider.edu')) { setError('Please use your @rider.edu email address.'); return; }
+    if (descLen > MAX_DESC) { setError(`Description is too long. Max ${MAX_DESC} characters.`); return; }
+    setSaving(true);
+    try { await onSubmit(f); setDone(true); setF(blank); }
+    catch(e) { setError('Could not submit. Please try again. Error: ' + e.message); }
+    setSaving(false);
+  };
+
+  if (done) return (
+    <div className="container">
+      <div style={{textAlign:'center',padding:'5rem 1rem'}}>
+        <div style={{fontSize:'3.5rem',marginBottom:'1.25rem'}}>🎉</div>
+        <h2 style={{fontSize:'1.75rem',fontWeight:900,marginBottom:'0.65rem'}}>Event Submitted!</h2>
+        <p style={{color:'var(--text-muted)',marginBottom:'1.75rem',maxWidth:'420px',margin:'0 auto 1.75rem'}}>Your event is pending admin review. You'll be notified at your @rider.edu email once approved.</p>
+        <button className="btn btn-primary" onClick={() => setDone(false)}>Submit Another Event</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="container">
+      <div className="page-header"><h1>Submit an Event</h1><p>Fill out the form below. Events require admin approval before going live.</p></div>
+      <div className="form-card">
+        {error && <div className="error-box">⚠️ {error}</div>}
+        <div className="form-grid">
+          <div className="form-group form-full">
+            <label className="form-label">Event Title <span className="req">*</span></label>
+            <input className="form-control" placeholder="e.g. Spring Club Fair" value={f.title} onChange={e => set('title',e.target.value)}/>
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">Description <span className="req">*</span>
+              <span className={`char-count ${descLen>MAX_DESC?'over':''}`}>{descLen}/{MAX_DESC}</span>
+            </label>
+            <textarea className={`form-control ${descLen>MAX_DESC?'error':''}`}
+              placeholder="Tell students what this event is about... (max 300 characters)"
+              value={f.description} onChange={e => set('description',e.target.value.slice(0,MAX_DESC))}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Category <span className="req">*</span></label>
+            <select className="form-control" value={f.category} onChange={e => set('category',e.target.value)}>
+              {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Date <span className="req">*</span></label>
+            <input type="date" className="form-control" value={f.date} onChange={e => set('date',e.target.value)}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Start Time <span className="req">*</span></label>
+            <select className="form-control" value={f.start_time} onChange={e => set('start_time',e.target.value)}>
+              <option value="">Select time...</option>
+              {TIME_OPTIONS.map(t => <option key={t.val} value={t.val}>{t.label}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">End Time <span className="req">*</span></label>
+            <select className="form-control" value={f.end_time} onChange={e => set('end_time',e.target.value)}>
+              <option value="">Select time...</option>
+              {TIME_OPTIONS.map(t => <option key={t.val} value={t.val}>{t.label}</option>)}
+            </select>
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">Location <span className="req">*</span></label>
+            <input className="form-control" placeholder="e.g. Alumni Gym, BLC Room 202" value={f.location} onChange={e => set('location',e.target.value)}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Organizer / Club Name <span className="req">*</span></label>
+            <input className="form-control" placeholder="e.g. SGA, Residence Life" value={f.organizer} onChange={e => set('organizer',e.target.value)}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Organizer Email <span className="req">*</span></label>
+            <input type="email" className="form-control" placeholder="you@rider.edu" value={f.organizer_email} onChange={e => set('organizer_email',e.target.value)}/>
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">RSVP Link <span className="opt">(optional)</span></label>
+            <input className="form-control" placeholder="https://..." value={f.rsvp_link} onChange={e => set('rsvp_link',e.target.value)}/>
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label" style={{display:'flex',alignItems:'center',gap:'0.6rem',cursor:'pointer'}}>
+              <input type="checkbox" checked={f.food_provided} onChange={e => set('food_provided',e.target.checked)} style={{width:'16px',height:'16px',cursor:'pointer'}}/>
+              🍕 Food will be provided at this event
+            </label>
+          </div>
+          {f.food_provided && (
+            <div className="form-group form-full">
+              <label className="form-label">What food will be served? <span className="opt">(optional)</span></label>
+              <input className="form-control" placeholder="e.g. Pizza, snacks, drinks..." value={f.food_info} onChange={e => set('food_info',e.target.value)}/>
+            </div>
+          )}
+          <div className="form-group">
+            <label className="form-label">Capacity <span className="opt">(0 = unlimited)</span></label>
+            <input type="number" min="0" className="form-control" placeholder="e.g. 50" value={f.capacity} onChange={e => set('capacity',+e.target.value)}/>
+          </div>
+        </div>
+        <div className="form-actions">
+          <button className="btn btn-primary" onClick={submit} disabled={saving}>
+            {saving?'⏳ Submitting...':'📝 Submit Event'}
+          </button>
+          {saving && <span style={{fontSize:'0.85rem',color:'var(--text-muted)'}}>Saving...</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ORGANIZER PAGE ────────────────────────────────────────────
+function OrganizerPage({ events, loading, onUpdate, onDelete, showToast }) {
+  const [email, setEmail] = useState('');
+  const [searched, setSearched] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [editData, setEditData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const mine = events.filter(e => (e.organizer_email||'').toLowerCase()===email.toLowerCase());
+
+  const startEdit = e => { setEditId(e.id); setEditData({title:e.title,description:e.description,date:e.date,start_time:e.start_time,end_time:e.end_time,location:e.location,rsvp_link:e.rsvp_link||'',capacity:e.capacity||0}); };
+  const saveEdit = async () => { setSaving(true); await onUpdate(editId,editData); showToast('Event updated! ✅','success'); setEditId(null); setSaving(false); };
+  const doDelete = async (id,title) => { if (!confirm(`Delete "${title}"?`)) return; setSaving(true); await onDelete(id); showToast('Event deleted.','error'); setSaving(false); };
+
+  return (
+    <div className="container">
+      <div className="page-header"><h1>Organizer Dashboard</h1><p>Track, edit, and manage your submitted events</p></div>
+      <div className="form-card" style={{maxWidth:'460px',marginLeft:0}}>
+        <div className="form-group" style={{marginBottom:'1rem'}}>
+          <label className="form-label">Your Rider Email</label>
+          <input className="form-control" placeholder="you@rider.edu" value={email} onChange={e => { setEmail(e.target.value); setSearched(false); }}/>
+        </div>
+        <button className="btn btn-primary" onClick={() => setSearched(true)}>View My Events</button>
+      </div>
+      {searched && <div style={{marginTop:'1.5rem'}}>
+        {loading ? <Loading/> : mine.length===0
+          ? <div className="empty"><div className="empty-icon">📭</div><h3>No events found</h3><p>No submissions from {email}</p></div>
+          : mine.map(e => (
+            <div key={e.id} style={{marginBottom:'1rem'}}>
+              <div className="org-event-row">
+                <div><h4>{e.title}</h4><p>{fmt(e.date)} · {e.location} · 🙋 {e.rsvp_count||0} RSVPs · 👁 {e.view_count||0} views</p></div>
+                <div style={{display:'flex',gap:'0.5rem',alignItems:'center',flexShrink:0}}>
+                  <span className={`status-badge status-${e.status}`}>{e.status}</span>
+                  {e.status!=='rejected' && <button className="btn btn-outline-dark btn-sm" onClick={() => editId===e.id?setEditId(null):startEdit(e)}>{editId===e.id?'Cancel':'✏️ Edit'}</button>}
+                  <button className="btn btn-reject btn-sm" onClick={() => doDelete(e.id,e.title)} disabled={saving}>🗑</button>
+                </div>
+              </div>
+              {editId===e.id && (
+                <div className="edit-overlay">
+                  <div className="form-grid" style={{marginBottom:'0.85rem'}}>
+                    <div className="form-group form-full"><label className="form-label">Title</label><input className="form-control" value={editData.title} onChange={e => setEditData(d=>({...d,title:e.target.value}))}/></div>
+                    <div className="form-group form-full"><label className="form-label">Description</label><textarea className="form-control" value={editData.description} onChange={e => setEditData(d=>({...d,description:e.target.value}))}/></div>
+                    <div className="form-group"><label className="form-label">Date</label><input type="date" className="form-control" value={editData.date} onChange={e => setEditData(d=>({...d,date:e.target.value}))}/></div>
+                    <div className="form-group"><label className="form-label">Location</label><input className="form-control" value={editData.location} onChange={e => setEditData(d=>({...d,location:e.target.value}))}/></div>
+                    <div className="form-group"><label className="form-label">Start Time</label><select className="form-control" value={editData.start_time} onChange={e => setEditData(d=>({...d,start_time:e.target.value}))}>{TIME_OPTIONS.map(t => <option key={t.val} value={t.val}>{t.label}</option>)}</select></div>
+                    <div className="form-group"><label className="form-label">End Time</label><select className="form-control" value={editData.end_time} onChange={e => setEditData(d=>({...d,end_time:e.target.value}))}>{TIME_OPTIONS.map(t => <option key={t.val} value={t.val}>{t.label}</option>)}</select></div>
+                    <div className="form-group"><label className="form-label">RSVP Link</label><input className="form-control" value={editData.rsvp_link} onChange={e => setEditData(d=>({...d,rsvp_link:e.target.value}))}/></div>
+                    <div className="form-group"><label className="form-label">Capacity (0 = unlimited)</label><input type="number" min="0" className="form-control" value={editData.capacity} onChange={e => setEditData(d=>({...d,capacity:+e.target.value}))}/></div>
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={saving}>{saving?'Saving...':'💾 Save Changes'}</button>
+                </div>
+              )}
+            </div>
+          ))
+        }
+      </div>}
+    </div>
+  );
+}
+
+// ── ADMIN LOGIN ───────────────────────────────────────────────
+function AdminLogin({ onLogin }) {
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const [checking, setChecking] = useState(false);
+  const go = async () => {
+    if (!pw) return; setChecking(true);
+    try { const hashed = await hashPw(pw); if (hashed===ADMIN_HASH) { onLogin(); } else { setErr('Incorrect password.'); setPw(''); } }
+    catch(e) { setErr('Something went wrong.'); }
+    setChecking(false);
+  };
+  return (
+    <div className="container">
+      <div className="login-card">
+        <div style={{fontSize:'2rem',marginBottom:'1rem'}}>🔐</div>
+        <h2 style={{fontSize:'1.4rem',fontWeight:900,marginBottom:'0.35rem'}}>Admin Login</h2>
+        <p style={{color:'var(--text-muted)',fontSize:'0.88rem',marginBottom:'1.5rem'}}>Enter the admin password to access the dashboard</p>
+        <div className="form-group" style={{marginBottom:'0.9rem'}}>
+          <label className="form-label">Password</label>
+          <input type="password" className="form-control" placeholder="Enter admin password" value={pw}
+            onChange={e => { setPw(e.target.value); setErr(''); }} onKeyDown={e => e.key==='Enter'&&go()}/>
+        </div>
+        {err && <p style={{color:'#E11D48',fontSize:'0.83rem',marginBottom:'0.9rem'}}>{err}</p>}
+        <button className="btn btn-primary" style={{width:'100%'}} onClick={go} disabled={checking}>{checking?'Checking...':'Login →'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── ADMIN DASHBOARD ───────────────────────────────────────────
+function AdminDash({ events, onUpdate, onLogout, showToast, loading }) {
+  const [tab, setTab] = useState('pending');
+  const [saving, setSaving] = useState(null);
+  const cnt = { pending:events.filter(e=>e.status==='pending').length, approved:events.filter(e=>e.status==='approved').length, rejected:events.filter(e=>e.status==='rejected').length, all:events.length };
+  const filtered = tab==='all' ? events : events.filter(e=>e.status===tab);
+
+  const approve = async id => {
+    setSaving(id+'-a');
+    await onUpdate(id,{status:'approved'});
+    const ev = events.find(e => String(e.id)===String(id));
+    if (ev) fetch('/api/discord-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...ev,status:'approved'})}).catch(()=>{});
+    showToast('Event approved! ✅','success');
+    setSaving(null);
+  };
+  const reject  = async id => { setSaving(id+'-r'); await onUpdate(id,{status:'rejected'}); showToast('Event rejected.','error'); setSaving(null); };
+  const feat    = async (id,f) => { setSaving(id+'-f'); await onUpdate(id,{featured:!f}); showToast(!f?'Featured! ⭐':'Removed from featured.','success'); setSaving(null); };
+
+  return (
+    <div className="container">
+      <div className="page-header" style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'1rem'}}>
+        <div><h1>Admin Dashboard</h1><p>Review, approve, and manage campus events</p></div>
+        <div style={{display:'flex',gap:'0.6rem',flexWrap:'wrap'}}>
+          <button className="btn-csv" onClick={() => exportCSV(events)}>⬇️ Export CSV</button>
+          <button className="btn btn-outline-dark btn-sm" onClick={onLogout}>Logout</button>
+        </div>
+      </div>
+      <div className="admin-stats">
+        <div className="admin-stat"><div className="admin-stat-num" style={{color:'#D97706'}}>{cnt.pending}</div><div className="admin-stat-label">Pending</div></div>
+        <div className="admin-stat"><div className="admin-stat-num" style={{color:'#16A34A'}}>{cnt.approved}</div><div className="admin-stat-label">Approved</div></div>
+        <div className="admin-stat"><div className="admin-stat-num" style={{color:'#E11D48'}}>{cnt.rejected}</div><div className="admin-stat-label">Rejected</div></div>
+        <div className="admin-stat"><div className="admin-stat-num">{cnt.all}</div><div className="admin-stat-label">Total</div></div>
+      </div>
+      <div className="admin-tabs">
+        {['pending','approved','rejected','all'].map(t => (
+          <button key={t} className={`admin-tab ${tab===t?'active':''}`} onClick={() => setTab(t)}>
+            {t.charAt(0).toUpperCase()+t.slice(1)} ({cnt[t]})
+          </button>
+        ))}
+      </div>
+      {tab==='pending' && filtered.length>1 && (
+        <div className="bulk-bar">
+          <span>🗂 {filtered.length} pending events</span>
+          <button className="btn btn-approve btn-sm" disabled={!!saving} onClick={async () => { setSaving('bulk'); for (const e of filtered) await approve(e.id); setSaving(null); }}>✓ Approve All</button>
+          <button className="btn btn-reject btn-sm" disabled={!!saving} onClick={async () => { setSaving('bulk'); for (const e of filtered) await reject(e.id); setSaving(null); }}>✕ Reject All</button>
+        </div>
+      )}
+      {loading ? <Loading/> : filtered.length===0
+        ? <div className="empty"><div className="empty-icon">✨</div><h3>All clear!</h3><p>No events here</p></div>
+        : filtered.map(e => (
+          <div key={e.id} className="admin-event-card">
+            <div className="admin-event-header">
+              <div><CatBadge cat={e.category}/><div className="admin-event-title">{e.title}</div></div>
+              <span className={`status-badge status-${e.status}`}>{e.status}</span>
+            </div>
+            <p className="admin-event-desc">{e.description}</p>
+            <div className="admin-event-meta">
+              <span>📅 {fmt(e.date)}</span><span>🕐 {fmtT(e.start_time)} – {fmtT(e.end_time)}</span>
+              <span>📍 {e.location}</span><span>👤 {e.organizer} · {e.organizer_email}</span>
+              <span>🙋 {e.rsvp_count||0} RSVPs</span><span>👁 {e.view_count||0} views</span>
+            </div>
+            <div className="admin-actions">
+              {e.status!=='approved'&&<button className="btn btn-approve btn-sm" disabled={!!saving} onClick={()=>approve(e.id)}>✓ Approve</button>}
+              {e.status!=='rejected'&&<button className="btn btn-reject btn-sm" disabled={!!saving} onClick={()=>reject(e.id)}>✕ Reject</button>}
+              {e.status==='approved'&&<button className="btn btn-feature btn-sm" disabled={!!saving} onClick={()=>feat(e.id,e.featured)}>{e.featured?'★ Unfeature':'☆ Feature'}</button>}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  );
+}
+
+// ── APP ROOT ──────────────────────────────────────────────────
+function App() {
+  const [page, setPage] = useState('home');
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [prefillDate, setPrefillDate] = useState('');
+
+  const showToast = (msg, type) => setToast({msg, type});
+  const nav = p => { setPage(p); window.scrollTo(0,0); };
+
+  const loadEvents = useCallback(async () => {
+    setLoading(true); setDbError('');
+    try {
+      const data = sbCheck(await _sb.from('events').select('*').order('created_at',{ascending:false}));
+      setEvents(data||[]);
+    } catch(e) {
+      console.error('DB error:', e);
+      setDbError(e.message);
+      showToast('Could not connect to database.','error');
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadEvents(); }, [loadEvents]);
+
+  const addEvent = async f => {
+    sbCheck(await _sb.from('events').insert({
+      title:f.title, description:f.description, category:f.category,
+      date:f.date, start_time:f.start_time, end_time:f.end_time,
+      location:f.location, organizer:f.organizer, organizer_email:f.organizer_email,
+      rsvp_link:f.rsvp_link||'', status:'pending', featured:false,
+      food_info:f.food_provided?(f.food_info||'Food provided'):'',
+      capacity:f.capacity||0, rsvp_count:0, view_count:0
+    }));
+    showToast('Event submitted for review! ✅','success');
+    setPrefillDate('');
+    await loadEvents();
+  };
+
+  const updEvent = async (id, updates) => {
+    sbCheck(await _sb.from('events').update(updates).eq('id',id));
+    await loadEvents();
+  };
+
+  const delEvent = async id => {
+    await _sb.from('comments').delete().eq('event_id',id);
+    sbCheck(await _sb.from('events').delete().eq('id',id));
+    await loadEvents();
+  };
+
+  return (
+    <div>
+      <nav>
+        <div className="nav-logo" onClick={() => nav('home')}>
+          <div className="nav-logo-icon">📅</div>
+          Rider Event Hub
+        </div>
+        <div className="nav-links">
+          <button className={`nav-link ${page==='home'?'active':''}`} onClick={() => nav('home')}>Home</button>
+          <button className={`nav-link ${page==='events'?'active':''}`} onClick={() => nav('events')}>Events</button>
+          <button className={`nav-link ${page==='calendar'?'active':''}`} onClick={() => nav('calendar')}>Calendar</button>
+          <button className={`nav-link ${page==='saved'?'active':''}`} onClick={() => nav('saved')}>🔖 Saved</button>
+          <button className={`nav-link ${page==='submit'?'active':''}`} onClick={() => nav('submit')}>Submit Event</button>
+          <button className={`nav-link ${page==='organizer'?'active':''}`} onClick={() => nav('organizer')}>Organizer</button>
+          <button className={`nav-link ${page==='adminlogin'||page==='admin'?'active':''}`}
+            onClick={() => nav(isAdmin?'admin':'adminlogin')}>{isAdmin?'Admin':'Admin Login'}</button>
+        </div>
+      </nav>
+
+      {dbError && (
+        <div style={{background:'#FFF5F5',borderBottom:'1px solid #FECDD3',padding:'0.65rem 2rem',fontSize:'0.83rem',color:'#E11D48',textAlign:'center'}}>
+          ⚠️ {dbError} — <button onClick={loadEvents} style={{background:'none',border:'none',color:'#E11D48',fontWeight:700,cursor:'pointer',textDecoration:'underline'}}>Retry</button>
+        </div>
+      )}
+
+      {page==='home'       && <HomePage       events={events} loading={loading} nav={nav} onView={setModal}/>}
+      {page==='events'     && <EventsPage     events={events} loading={loading} onView={setModal}/>}
+      {page==='calendar'   && <CalendarPage   events={events} loading={loading} onView={setModal} onAddEvent={date => { setPrefillDate(date); nav('submit'); }}/>}
+      {page==='saved'      && <SavedEventsPage events={events} onView={setModal} nav={nav}/>}
+      {page==='submit'     && <SubmitPage     onSubmit={addEvent} prefillDate={prefillDate}/>}
+      {page==='organizer'  && <OrganizerPage  events={events} loading={loading} onUpdate={updEvent} onDelete={delEvent} showToast={showToast}/>}
+      {page==='adminlogin' && <AdminLogin     onLogin={() => { setIsAdmin(true); nav('admin'); }}/>}
+      {page==='admin'      && (isAdmin
+        ? <AdminDash events={events} onUpdate={updEvent} onLogout={() => { setIsAdmin(false); nav('home'); }} showToast={showToast} loading={loading}/>
+        : <AdminLogin onLogin={() => { setIsAdmin(true); nav('admin'); }}/>
+      )}
+
+      {modal && <EventModal ev={modal} onClose={() => setModal(null)} onRsvp={() => loadEvents()}/>}
+      {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)}/>}
+
+      <footer>
+        <strong>Rider Event Hub</strong> · Built for Rider University students · Lawrenceville, NJ · © 2026
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>

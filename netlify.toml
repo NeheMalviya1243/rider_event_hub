@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/db"
+  to = "/.netlify/functions/db"
+  status = 200
+
+[[redirects]]
+  from = "/api/discord-notify"
+  to = "/.netlify/functions/discord-notify"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
